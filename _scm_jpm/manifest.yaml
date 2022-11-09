@@ -1,0 +1,160 @@
+common:
+  bbNotifyData:
+    considerUnstableAsSuccess: true
+  pipelineType: node
+  cleanWorkspace: true
+  debug: true
+
+  npm:
+    dockerImage: "jnj.artifactrepo.jnj.com/jpm/node:16"
+    registry: https://registry.npmjs.org/
+
+  unitTest:
+    enabled: false
+
+  lint:
+    enabled: false
+
+  staticAnalysis:
+    enabled: false
+    type: sonar
+
+  calculateChanges:
+    branch: main
+
+  versionCalculation:
+    enabled: true
+    type: gitversion
+
+  versionFileUpdates:
+    - type: node-package
+
+  buildAnalysis:
+    enabled: false
+
+  resolveArtifacts:
+    enabled: false
+
+  s3:
+    credentialsId: itx-cdo-jenkinsapi-aws
+
+  package:
+    enabled: true
+    type: react.web
+    packageDir: out
+    name: jetlify-static
+    npmCommand: "npm run build && npm run export"
+
+  deploy: 
+    enabled: true
+    type: "multi"
+    parallel: "false"
+    stages:
+      createS3:
+        enabled: false
+        type: iac
+        vpcxAccount: "itx-cdo"
+        jenkinsCredentialsId: "sourcecode-bitbucket"
+        pipelineLibraryBranch: "feature/AGHE-2827"
+        tfVersion: "1.0"
+      appDeployment:
+        enabled: true
+        type: s3
+        srcPath: .unarchive
+        credentialsId: itx-arv-staticsites
+        preStage:
+          enabled: true
+          scriptType: groovyScriptFile
+          script: _scm_jenkins/clear-s3-bucket.groovy
+          ignoreError: true
+        postStage:
+          enabled: true
+          scriptType: groovyScriptFile
+          script: _scm_jenkins/clear-cf-cache.groovy
+          ignoreError: true
+
+  buildAnnouncements:
+    enabled: false
+
+  email:
+    sender: noreply@its.jnj.com
+
+environments:
+  PREDEV:
+    versionCalculation:
+      patternType: 'jnj-developer-branch'
+
+    s3:
+      cloudFrontDistId: E3SLRF8HGLEXOS
+      s3Bucket: jetlify-static 
+
+    deploy: 
+      stages:
+        createS3:
+          tfParameters:
+            - name: bucketName
+              value: "jetlify-static" 
+        appDeployment:
+          s3Bucket: jetlify-static 
+
+  DEV:
+    versionCalculation:
+      patternType: 'jnj-dev-branch'
+  
+    staticAnalysis:
+      enabled: true
+
+    s3:
+      cloudFrontDistId: E3SLRF8HGLEXOS
+      s3Bucket: jetlify-static
+
+    deploy: 
+      stages:
+        createS3:
+          tfParameters:
+            - name: bucketName
+              value: "jetlify-static"
+        appDeployment:
+          s3Bucket: jetlify-static
+
+  PROD:
+    versionCalculation:
+      patternType: 'jnj-release'
+
+    publish:
+      enabled: true
+
+    s3:
+      cloudFrontDistId: E2BHW4LQHF7NNJ
+      s3Bucket: jetlify-static
+
+    deploy: 
+      stages:
+        createS3:
+          tfParameters:
+            - name: bucketName
+              value: "jetlify-static-prod"
+        appDeployment:
+          s3Bucket: jetlify-static-prod
+
+    buildAnnouncements:
+      enabled: true
+      destinations:
+        emails:
+          type: email
+          format: buildstate
+          recipients: [elima31@ITS.JNJ.com]
+          successEnabled: true
+
+    release:
+      type: auto
+      confirmVersion: false
+      updateChangelog: false
+      merge: false
+      useVTagName: true
+      versionType: 'jnj-release'
+      releaseDestination: main
+      branchToRelease: main
+      versionFileUpdates:
+        - type: simple
+          file: version
