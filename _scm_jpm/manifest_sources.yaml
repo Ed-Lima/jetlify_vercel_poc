@@ -1,0 +1,6 @@
+- branchNamePattern: '(feature|bugfix|hotfix)/.*'
+  environment: 'PREDEV'
+- branchNamePattern: 'develop'
+  environment: 'DEV'
+- branchNamePattern: 'main'
+  environment: 'PROD'
