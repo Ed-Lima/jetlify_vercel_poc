@@ -1,0 +1,51 @@
+common:
+  debug: false
+  pipelineType: node
+  npm:
+    dockerImage: jnj.artifactrepo.jnj.com/jpm/node:16
+  # Pre Build Actions
+  unitTest:
+    enabled: false
+  lint:
+    enabled: false
+  staticAnalysis:
+    enabled: false
+  dependencyAnalysis:
+    enabled: false
+  versionCalculation:
+    enabled: false
+  # Build Actions
+  package:
+    enabled: false
+  publish:
+    enabled: false
+  resolveArtifacts:
+    enabled: false
+  buildAnalysis:
+    enabled: false
+  # Post Build Actions
+  deploy:
+    enabled: true
+    type: script
+    script: project/_scm_jpm/script_deploy.groovy
+  integrationTest:
+    enabled: false
+  regressionTest:
+    enabled: false
+  resolveArtifacts:
+    enabled: false
+environments:
+  DEV:
+    debug: false
+    versionCalculation:
+      enabled: false
+    package:
+      enabled: false
+    publish:
+      enabled: false
+    buildAnalysis:
+      enabled: false
+    deploy:
+      enabled: true
+      workspace: dev
+      dryRun: false
