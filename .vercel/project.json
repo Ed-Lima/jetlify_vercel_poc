@@ -1,0 +1,15 @@
+{
+  "projectId": "",
+  "orgId": "",
+  "settings": {
+    "createdAt": 1665686505559,
+    "framework": "nextjs",
+    "devCommand": null,
+    "installCommand": null,
+    "buildCommand": null,
+    "outputDirectory": null,
+    "rootDirectory": null,
+    "directoryListing": false,
+    "nodeVersion": "16.x"
+  }
+}
